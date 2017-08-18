@@ -2,6 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 
+
+using UDEngine.Interface;
+using UDEngine.Enum;
 //Error Logging
 using UDEngine.Internal;
 
@@ -17,6 +20,10 @@ namespace UDEngine.Components.Collision {
 		/// Set radius to 1f on error.
 		/// </summary>
 		/// <param name="radius">Radius.</param>
+		/// <param name="enabled = true">Is the collider enabled</param>
+		/// <param name="layer = 0">Collision layer</param>
+		/// <param name="trans = null">Default transform</param>
+		/// 
 		public UCircleCollider(float radius, bool enabled = true, int layer = 0, Transform trans = null) {
 			if (radius <= 0f) {
 				UDebug.Error ("collider radius cannot be negative or 0. Set to 1f instead");
@@ -31,9 +38,9 @@ namespace UDEngine.Components.Collision {
 			//  |_ UBulletComponents (collider resides here)
 			//  |_ UBulletChildren (used if I want to use this bullet as a bullet group, empty by default)
 			if (trans == null) {
-				if (this.transform.parent != null) {
+				if (this.transform.parent != null) { // tries to use parent transform first
 					this.trans = this.transform.parent;
-				} else {
+				} else { // fallback
 					this.trans = this.transform;
 				}
 			} else {
@@ -48,6 +55,11 @@ namespace UDEngine.Components.Collision {
 
 
 		// STATIC begin
+		/// <summary>
+		/// The suggested max radius.
+		/// It is used as a safeguard agains collider against TOO large radius that Spatial Hash could not handle
+		/// It is mainly used in Inspector warning
+		/// </summary>
 		private static float _suggestedMaxRadius = 5f;
 		public static float GetSuggestedMaxRadius() {
 			return _suggestedMaxRadius;
@@ -63,9 +75,25 @@ namespace UDEngine.Components.Collision {
 
 
 		// PROP begin
+		/// <summary>
+		/// The radius of the collider
+		/// </summary>
 		public float radius = 1f;
+
+		/// <summary>
+		/// trans is the actual transform that should be evaluated
+		/// it is usually the PARENT of the object that contains this class
+		/// </summary>
 		public Transform trans;
+
+		/// <summary>
+		/// Collision layer. This simulates the Physic2D layering
+		/// </summary>
 		public int layer;
+
+		/// <summary>
+		/// Whether the collider is enabled
+		/// </summary>
 		private bool _enabled = true;
 		// PROP end
 
@@ -126,6 +154,11 @@ namespace UDEngine.Components.Collision {
 			return Vector2.Distance (_Vec3ToVec2(this.trans.position), otherTrans);
 		}
 
+		/// <summary>
+		/// Determines whether this instance is collided with the specified collider.
+		/// </summary>
+		/// <returns><c>true</c> if this instance is collided with the specified collider; otherwise, <c>false</c>.</returns>
+		/// <param name="collider">Collider.</param>
 		public bool IsCollidedWith(UCircleCollider collider) {
 			return this.DistanceFrom (collider.GetTransform ()) < this.GetRadius () + collider.GetRadius ();
 		}

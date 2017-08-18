@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace UDEngine.Components {
+using UDEngine;
+using UDEngine.Enum;
+
+namespace UDEngine.Interface {
 	/// <summary>
 	/// Collider Interface
 	/// To implement QuadTree, we need to satisfy IQuadTreeObject interface

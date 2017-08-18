@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace UDEngine.Components {
+namespace UDEngine.Enum {
 	/// <summary>
 	/// Collider types.
 	/// Defined and implemented so that we can enforce type conversion based on type knowledge
