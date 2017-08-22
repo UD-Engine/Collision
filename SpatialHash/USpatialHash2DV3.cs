@@ -16,7 +16,7 @@ namespace UDEngine.Internal {
 	/// <summary>
 	/// 2D Spatial Hash. type <T> must supply ISpatialHashObject2D's interface requirements
 	/// </summary>
-	public class USpatialHash2DV2<T> where T : ISpatialHashObject2D {
+	public class USpatialHash2DV3<T> where T : ISpatialHashObject2D {
 		public float sceneWidth;
 		public float sceneHeight;
 		public float cellSizeX;
@@ -41,7 +41,7 @@ namespace UDEngine.Internal {
 		/// <param name="sceneHeight">Scene height.</param>
 		/// <param name="minX">Minimum x.</param>
 		/// <param name="minY">Minimum y.</param>
-		public USpatialHash2DV2(int cols, int rows, float sceneWidth, float sceneHeight, float minX, float minY) {
+		public USpatialHash2DV3(int cols, int rows, float sceneWidth, float sceneHeight, float minX, float minY) {
 			this.sceneWidth = sceneWidth;
 			this.sceneHeight = sceneHeight;
 			this.cols = cols;
@@ -63,9 +63,10 @@ namespace UDEngine.Internal {
 
 		//Insert an Object to the bucket
 		public void Insert(T obj) {
-			HashSet<int> cellIDs = GetBucketIDs (obj);
+			int[] cellIDs = GetBucketIDs (obj);
 
-			foreach (int item in cellIDs) {
+			for (int i = 0; i < cellIDs.Length; i++) {
+				int item = cellIDs [i];
 				//Avoid OutOfBounds Error (since obj may move OUTSIDE of the scene limits, generating unwanted "item" value, e.g. -1)
 				if (item >= bucketSize || item < 0) {
 					continue;
@@ -78,8 +79,9 @@ namespace UDEngine.Internal {
 		public List<T> GetNearby(T obj) {
 			List<T> objects = new List<T>();
 
-			HashSet<int> bucketIDs = GetBucketIDs(obj);
-			foreach (int item in bucketIDs) {
+			int[] bucketIDs = GetBucketIDs(obj);
+			for (int i = 0; i < bucketIDs.Length; i++) {
+				int item = bucketIDs [i];
 				//Avoid OutOfBounds Error (since obj may move OUTSIDE of the scene limits, generating unwanted "item" value, e.g. -1)
 				if (item >= bucketSize || item < 0) {
 					continue;
@@ -105,7 +107,7 @@ namespace UDEngine.Internal {
 		/// <param name="vector">Vector.</param>
 		/// <param name="width">Width.</param>
 		/// <param name="bucketIDs">Bucket I ds.</param>
-		private void AddBucket(Vector2 vector, float width, HashSet<int> bucketIDs) {
+		private void AddBucket(Vector2 vector, float width, int[] bucketIDs, int index) {
 			//The supposed key (ID) to the cell that covers the vector position
 			//			int cellPosition = (int) (
 			//				(Mathf.Floor((vector.x - minX) / cellSizeX)) +
@@ -120,7 +122,7 @@ namespace UDEngine.Internal {
 
 			// Add ONLY if not containing
 			//if (!bucketIDs.Contains (cellPosition)) {
-			bucketIDs.Add(cellPosition);
+			bucketIDs[index] = cellPosition;
 			//}
 		}
 
@@ -131,8 +133,8 @@ namespace UDEngine.Internal {
 		/// </summary>
 		/// <returns>The bucket I ds.</returns>
 		/// <param name="obj">Object.</param>
-		private HashSet<int> GetBucketIDs(T obj) {
-			HashSet<int> bucketIDs = new HashSet<int>();
+		private int[] GetBucketIDs(T obj) {
+			int[] bucketIDs = new int[4];
 
 			// Caching to avoid repetitive bad operations
 			Vector2 objPos = obj.GetPosition();
@@ -150,13 +152,13 @@ namespace UDEngine.Internal {
 				);
 
 			//TopLeft
-			AddBucket(min, cols, bucketIDs);
+			AddBucket(min, cols, bucketIDs, 0);
 			//TopRight
-			AddBucket(new Vector2(max.x, min.y), cols, bucketIDs);
+			AddBucket(new Vector2(max.x, min.y), cols, bucketIDs, 1);
 			//BottomRight
-			AddBucket(max, cols, bucketIDs);
+			AddBucket(max, cols, bucketIDs, 2);
 			//BottomLeft
-			AddBucket(new Vector2(min.x, max.y), cols, bucketIDs);
+			AddBucket(new Vector2(min.x, max.y), cols, bucketIDs, 3);
 
 			return bucketIDs;   
 		}
