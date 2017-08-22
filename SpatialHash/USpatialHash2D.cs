@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -55,6 +55,8 @@ namespace UDEngine.Internal {
 				this.buckets.Add (i, new List<T> ());
 			}
 			this.bucketSize = buckets.Count;
+
+			//this.bucketIDs = new HashSet<int> ();
 		}
 
 		//Insert an Object to the bucket
@@ -102,23 +104,36 @@ namespace UDEngine.Internal {
 		/// <param name="bucketIDs">Bucket I ds.</param>
 		private void AddBucket(Vector2 vector, float width, HashSet<int> bucketIDs) {
 			//The supposed key (ID) to the cell that covers the vector position
+//			int cellPosition = (int) (
+//				(Mathf.Floor((vector.x - minX) / cellSizeX)) +
+//				(Mathf.Floor((vector.y - minY) / cellSizeY)) *
+//				width
+//			);
 			int cellPosition = (int) (
-				(Mathf.Floor((vector.x - minX) / cellSizeX)) +
-				(Mathf.Floor((vector.y - minY) / cellSizeY)) *
+				(_FastFloor((vector.x - minX) / cellSizeX)) +
+				(_FastFloor((vector.y - minY) / cellSizeY)) *
 				width
 			);
+
 			// Add ONLY if not containing
-			if (!bucketIDs.Contains (cellPosition)) {
-				bucketIDs.Add (cellPosition);
-			}
+			//if (!bucketIDs.Contains (cellPosition)) { // Removed as it is not needed (HashSet ensures uniqueness)
+			bucketIDs.Add (cellPosition);
+			//}
 		}
 
+
+		//HashSet<int> bucketIDs;
 		/// <summary>
 		/// Get the Dictionary Keys of Buckets that may contain bullets that OVERLAPS obj
 		/// </summary>
 		/// <returns>The bucket I ds.</returns>
 		/// <param name="obj">Object.</param>
 		private HashSet<int> GetBucketIDs(T obj) {
+//			if (bucketIDs == null) {
+//				bucketIDs = new HashSet<int> ();
+//			} else {
+//				bucketIDs.Clear ();
+//			}
 			HashSet<int> bucketIDs = new HashSet<int>();
 
 			Vector2 min = 
@@ -142,6 +157,16 @@ namespace UDEngine.Internal {
 			AddBucket(new Vector2(min.x, max.y), cols, bucketIDs);
 
 			return bucketIDs;    
+		}
+
+
+
+
+		private const int _BIG_ENOUGH_INT = 16 * 1024;
+		private const double _BIG_ENOUGH_FLOOR = _BIG_ENOUGH_INT + 0.0000;
+
+		private static int _FastFloor(float f) {
+			return (int)(f + _BIG_ENOUGH_FLOOR) - _BIG_ENOUGH_INT;
 		}
 	}
 }
