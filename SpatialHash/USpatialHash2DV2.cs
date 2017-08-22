@@ -145,16 +145,19 @@ namespace UDEngine.Internal {
 
 			// This HashSet might NOT be necessary! after all, we only have 4 possible objects...
 
+			// Caching to avoid repetitive bad operations
+			Vector2 objPos = obj.GetPosition();
+			float objRadius = obj.GetRadius ();
 
 			Vector2 min = 
 				new Vector2(
-					obj.GetPosition().x - (obj.GetRadius()),
-					obj.GetPosition().y - (obj.GetRadius())
+					objPos.x - objRadius,
+					objPos.y - objRadius
 				);
 			Vector2 max = 
 				new Vector2(
-					obj.GetPosition().x + (obj.GetRadius()),
-					obj.GetPosition().y + (obj.GetRadius())
+					objPos.x + objRadius,
+					objPos.y + objRadius
 				);
 
 			//TopLeft
