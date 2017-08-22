@@ -15,7 +15,7 @@ namespace UDEngine.Components.Collision {
 			_bulletColliders = new List<UBulletCollider> ();
 			_targetColliders = new List<UTargetCollider> ();
 
-			_bulletHash = new USpatialHash2D<UCircleCollider> (cols, rows, sceneWidth, sceneHeight, minX, minY);
+			_bulletHash = new USpatialHash2DV2<UCircleCollider> (cols, rows, sceneWidth, sceneHeight, minX, minY);
 		}
 		// CONSTRUCTOR end
 
@@ -65,7 +65,7 @@ namespace UDEngine.Components.Collision {
 		private List<UBulletCollider> _bulletColliders;
 		private List<UTargetCollider> _targetColliders;
 
-		private USpatialHash2D<UCircleCollider> _bulletHash;
+		private USpatialHash2DV2<UCircleCollider> _bulletHash;
 		// PROP end
 
 		// METHOD begin

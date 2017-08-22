@@ -1,10 +1,14 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 
 using UDEngine;
 using UDEngine.Interface;
 using UDEngine.Internal;
+
+// Adapted from https://unionassets.com/blog/spatial-hashing-295
+// Adapted from https://conkerjo.wordpress.com/2009/06/13/spatial-hashing-implementation-for-fast-2d-collisions/
 
 namespace UDEngine.Internal {
 
@@ -12,7 +16,7 @@ namespace UDEngine.Internal {
 	/// <summary>
 	/// 2D Spatial Hash. type <T> must supply ISpatialHashObject2D's interface requirements
 	/// </summary>
-	public class USpatialHash2D<T> where T : ISpatialHashObject2D {
+	public class USpatialHash2DV2<T> where T : ISpatialHashObject2D {
 		public float sceneWidth;
 		public float sceneHeight;
 		public float cellSizeX;
@@ -37,7 +41,7 @@ namespace UDEngine.Internal {
 		/// <param name="sceneHeight">Scene height.</param>
 		/// <param name="minX">Minimum x.</param>
 		/// <param name="minY">Minimum y.</param>
-		public USpatialHash2D(int cols, int rows, float sceneWidth, float sceneHeight, float minX, float minY) {
+		public USpatialHash2DV2(int cols, int rows, float sceneWidth, float sceneHeight, float minX, float minY) {
 			this.sceneWidth = sceneWidth;
 			this.sceneHeight = sceneHeight;
 			this.cols = cols;
@@ -61,8 +65,11 @@ namespace UDEngine.Internal {
 
 		//Insert an Object to the bucket
 		public void Insert(T obj) {
-			HashSet<int> cellIDs = GetBucketIDs (obj);
-			foreach (int item in cellIDs) {
+			//HashSet<int> cellIDs = GetBucketIDs (obj);
+			int[] cellIDs = GetBucketIDs (obj).ToArray(); // Array is faster to iterate
+
+			for (int i = 0; i < cellIDs.Length; i++) {
+				int item = cellIDs [i];
 				//Avoid OutOfBounds Error (since obj may move OUTSIDE of the scene limits, generating unwanted "item" value, e.g. -1)
 				if (item >= bucketSize || item < 0) {
 					continue;
@@ -104,11 +111,11 @@ namespace UDEngine.Internal {
 		/// <param name="bucketIDs">Bucket I ds.</param>
 		private void AddBucket(Vector2 vector, float width, HashSet<int> bucketIDs) {
 			//The supposed key (ID) to the cell that covers the vector position
-//			int cellPosition = (int) (
-//				(Mathf.Floor((vector.x - minX) / cellSizeX)) +
-//				(Mathf.Floor((vector.y - minY) / cellSizeY)) *
-//				width
-//			);
+			//			int cellPosition = (int) (
+			//				(Mathf.Floor((vector.x - minX) / cellSizeX)) +
+			//				(Mathf.Floor((vector.y - minY) / cellSizeY)) *
+			//				width
+			//			);
 			int cellPosition = (int) (
 				(_FastFloor((vector.x - minX) / cellSizeX)) +
 				(_FastFloor((vector.y - minY) / cellSizeY)) *
@@ -129,12 +136,15 @@ namespace UDEngine.Internal {
 		/// <returns>The bucket I ds.</returns>
 		/// <param name="obj">Object.</param>
 		private HashSet<int> GetBucketIDs(T obj) {
-//			if (bucketIDs == null) {
-//				bucketIDs = new HashSet<int> ();
-//			} else {
-//				bucketIDs.Clear ();
-//			}
+			//			if (bucketIDs == null) {
+			//				bucketIDs = new HashSet<int> ();
+			//			} else {
+			//				bucketIDs.Clear ();
+			//			}
 			HashSet<int> bucketIDs = new HashSet<int>();
+
+			// This HashSet might NOT be necessary! after all, we only have 4 possible objects...
+
 
 			Vector2 min = 
 				new Vector2(
