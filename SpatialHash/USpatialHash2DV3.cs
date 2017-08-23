@@ -62,8 +62,23 @@ namespace UDEngine.Internal {
 		}
 
 		//Insert an Object to the bucket
+		// Update: Add optional pos to minimize calls to GetPosition
 		public void Insert(T obj) {
 			int[] cellIDs = GetBucketIDs (obj);
+
+			for (int i = 0; i < cellIDs.Length; i++) {
+				int item = cellIDs [i];
+				//Avoid OutOfBounds Error (since obj may move OUTSIDE of the scene limits, generating unwanted "item" value, e.g. -1)
+				if (item >= bucketSize || item < 0) {
+					continue;
+				}
+				buckets[item].Add(obj);
+			}
+		}
+
+		// Use external pos to avoid GetPosition (slow)
+		public void Insert(Vector2 pos, T obj) {
+			int[] cellIDs = GetBucketIDs (pos, obj);
 
 			for (int i = 0; i < cellIDs.Length; i++) {
 				int item = cellIDs [i];
@@ -138,6 +153,37 @@ namespace UDEngine.Internal {
 
 			// Caching to avoid repetitive bad operations
 			Vector2 objPos = obj.GetPosition();
+			float objRadius = obj.GetRadius ();
+
+			Vector2 min = 
+				new Vector2(
+					objPos.x - objRadius,
+					objPos.y - objRadius
+				);
+			Vector2 max = 
+				new Vector2(
+					objPos.x + objRadius,
+					objPos.y + objRadius
+				);
+
+			//TopLeft
+			AddBucket(min, cols, bucketIDs, 0);
+			//TopRight
+			AddBucket(new Vector2(max.x, min.y), cols, bucketIDs, 1);
+			//BottomRight
+			AddBucket(max, cols, bucketIDs, 2);
+			//BottomLeft
+			AddBucket(new Vector2(min.x, max.y), cols, bucketIDs, 3);
+
+			return bucketIDs;   
+		}
+
+		// Use external pos to avoid GetPosition (slow)
+		private int[] GetBucketIDs(Vector2 pos, T obj) {
+			int[] bucketIDs = new int[4];
+
+			// Caching to avoid repetitive bad operations
+			Vector2 objPos = pos;
 			float objRadius = obj.GetRadius ();
 
 			Vector2 min = 

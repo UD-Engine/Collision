@@ -12,7 +12,7 @@ namespace UDEngine.Components.Collision {
 	public class UCollisionMonitor : IMonolike {
 		// CONSTRUCTOR begin
 		public UCollisionMonitor(int cols, int rows, float sceneWidth, float sceneHeight, float minX, float minY) {
-			_bulletColliders = new List<UBulletCollider> ();
+			_bulletColliders = new LinkedList<UBulletCollider> ();
 			_targetColliders = new List<UTargetCollider> ();
 
 			_bulletHash = new USpatialHash2DV3<UCircleCollider> (cols, rows, sceneWidth, sceneHeight, minX, minY);
@@ -25,12 +25,39 @@ namespace UDEngine.Components.Collision {
 
 		public void UpdateFunc () {
 			_bulletHash.ClearBuckets ();
-			foreach (UBulletCollider ubc in _bulletColliders) {
+
+			// Looping through LinkedList
+			LinkedListNode<UBulletCollider> ubcNode = _bulletColliders.First;
+			while (ubcNode != null) {
+				UBulletCollider ubc = ubcNode.Value;
+				LinkedListNode<UBulletCollider> nextNode = ubcNode.Next;
+
 				ubc.InvokeDefaultCallbacks ();
-				if (ubc.IsEnabled ()) {
-					_bulletHash.Insert (ubc);
+
+				// TODO: boundary check registers
+
+				if (ubc.IsRecyclable ()) {
+					ubc.SetRecyclable (true); // In case that the enabled is still true...
+
+					// TODO: call clearup func here
+
+					_bulletColliders.Remove (ubcNode); // Remove Node from tracking
+				} else {
+					if (ubc.IsEnabled ()) {
+						_bulletHash.Insert (ubc); // Insert to hash ONLY if is enabled
+					}
 				}
+
+				ubcNode = nextNode; // Move to the next node
 			}
+
+
+//			foreach (UBulletCollider ubc in _bulletColliders) {
+//				ubc.InvokeDefaultCallbacks ();
+//				if (ubc.IsEnabled ()) {
+//					_bulletHash.Insert (ubc);
+//				}
+//			}
 
 			foreach (UTargetCollider target in _targetColliders) {
 				if (!target.IsEnabled ()) {
@@ -62,14 +89,16 @@ namespace UDEngine.Components.Collision {
 		// UNITYFUNC end
 
 		// PROP begin
-		private List<UBulletCollider> _bulletColliders;
+
+		// To make removal faster, changed to LinkedList
+		private LinkedList<UBulletCollider> _bulletColliders;
 		private List<UTargetCollider> _targetColliders;
 
 		private USpatialHash2DV3<UCircleCollider> _bulletHash;
 		// PROP end
 
 		// METHOD begin
-		public List<UBulletCollider> GetBulletColliders() {
+		public LinkedList<UBulletCollider> GetBulletColliders() {
 			return _bulletColliders;
 		}
 
@@ -78,11 +107,15 @@ namespace UDEngine.Components.Collision {
 		}
 
 		public void AddBulletColliders(List<UBulletCollider> colliders) {
-			_bulletColliders.AddRange (colliders);
+			//_bulletColliders.AddRange (colliders);
+			for (int i = 0; i < colliders.Count; i++) {
+				_bulletColliders.AddLast (colliders [i]);
+			}
 		}
 
 		public void AddBulletCollider(UBulletCollider collider) {
-			_bulletColliders.Add (collider);
+			//_bulletColliders.Add (collider);
+			_bulletColliders.AddLast (collider);
 		}
 
 		public void AddTargetColliders(List<UTargetCollider> colliders) {

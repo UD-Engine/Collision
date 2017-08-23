@@ -18,13 +18,16 @@ namespace UDEngine.Components.Collision {
 	public class UBulletCollider : UCircleCollider {
 
 		// CONSTRUCTOR begin
-		public UBulletCollider(float radius, bool enabled = true, int layer = 0, Transform trans = null) : base(radius, enabled, layer, trans) {
-			
+		public UBulletCollider(float radius, bool enabled = true, int layer = 0, Transform trans = null, bool isRecyclable = false) : base(radius, enabled, layer, trans) {
+			this.isRecyclable = isRecyclable;
 		}
 		// CONSTRUCTOR end
 
 		// PROP begin
 		//private Sequence _collisionActionSequence = null;
+
+		// Enabled means should have collision detection (can still on screen), Recyclable means should REMOVE from screen
+		public bool isRecyclable = false;
 
 		public UnityEvent collisionEvent = null;
 		public UnityEvent defaultEvent = null;
@@ -38,6 +41,17 @@ namespace UDEngine.Components.Collision {
 			}
 			return _collisionActionSequence;
 		}*/
+		public bool IsRecyclable() {
+			return this.isRecyclable;
+		}
+
+		public void SetRecyclable(bool cond = true, bool shouldChangeEnabled = true) {
+			this.isRecyclable = cond;
+
+			if (shouldChangeEnabled) {
+				this.SetEnable (!cond); // enabled should have EXACTEDLY opposite condition normally
+			}
+		}
 
 		public void AddCollisionCallback(UnityAction callback) {
 			if (collisionEvent == null) {
