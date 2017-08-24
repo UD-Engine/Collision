@@ -33,7 +33,6 @@ namespace UDEngine.Components.Collision {
 		// UNITYFUNC end
 
 		// PROP begin
-		//private Sequence _collisionActionSequence = null;
 
 		// Enabled means should have collision detection (can still on screen), Recyclable means should REMOVE from screen
 		public bool isRecyclable = false;
@@ -42,13 +41,6 @@ namespace UDEngine.Components.Collision {
 		// PROP end
 
 		// METHOD begin
-		/*
-		public Sequence GetCollisionActionSequence() {
-			if (_collisionActionSequence == null) {
-				_collisionActionSequence = DOTween.Sequence ();
-			}
-			return _collisionActionSequence;
-		}*/
 		public bool IsRecyclable() {
 			return this.isRecyclable;
 		}
