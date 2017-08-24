@@ -16,6 +16,11 @@ namespace UDEngine.Components.Collision {
 		public UCollisionMonitor(int cols, int rows, float sceneWidth, float sceneHeight, float minX, float minY) {
 			_bulletColliders = new LinkedList<UBulletCollider> ();
 			_targetColliders = new List<UTargetCollider> ();
+
+			_boundXMin = minX;
+			_boundXMax = minX + sceneWidth;
+			_boundYMin = minY;
+			_boundYMax = minY + sceneHeight;
 		}
 		// CONSTRUCTOR end
 
@@ -42,7 +47,10 @@ namespace UDEngine.Components.Collision {
 				// Caching position will be VERY useful in later steps, including boundary collider check and target collision check
 				Vector3 ubcPosition = ubc.trans.position;
 
-				// TODO: boundary check registers
+				// boundary check registers
+				if (!IsInBoundary (ubcPosition)) {
+					// TODO: 
+				}
 
 				if (ubc.IsRecyclable ()) {
 					ubc.SetRecyclable (true); // In case that the enabled is still true...
@@ -58,8 +66,8 @@ namespace UDEngine.Components.Collision {
 				for (int i = 0; i < enabledTargetsLen; i++) {
 					UTargetCollider target = enabledTargets[i];
 
+					// This exposition of the underlying collision logic is ugly, but... it is for performance's sake...
 					if (KVector3.DistanceXY(target.trans.position, ubcPosition) < ubc.GetRadius() + target.GetRadius()) {
-					//if (ubc.IsCollidedWith (target)) {
 						// If fast detect flag is set, then immediately drop out 
 						// and NOT invoking any bullet collision handling events
 						targetIsCollidedMap[i] = true;
@@ -90,6 +98,12 @@ namespace UDEngine.Components.Collision {
 
 		// PROP begin
 
+		// Monitor Boundary
+		private float _boundXMin;
+		private float _boundXMax;
+		private float _boundYMin;
+		private float _boundYMax;
+
 		// To make removal faster, changed to LinkedList
 		private LinkedList<UBulletCollider> _bulletColliders;
 		private List<UTargetCollider> _targetColliders;
@@ -97,6 +111,25 @@ namespace UDEngine.Components.Collision {
 		// PROP end
 
 		// METHOD begin
+		public bool IsInBoundary(Vector3 pos) {
+			return (
+				(pos.x >= _boundXMin) &&
+				(pos.x <= _boundXMax) &&
+				(pos.y >= _boundYMin) &&
+				(pos.y <= _boundYMax)
+			);
+		}
+
+		public bool IsInBoundary(Vector2 pos) {
+			return (
+				(pos.x >= _boundXMin) &&
+				(pos.x <= _boundXMax) &&
+				(pos.y >= _boundYMin) &&
+				(pos.y <= _boundYMax)
+			);
+		}
+
+
 		public LinkedList<UBulletCollider> GetBulletColliders() {
 			return _bulletColliders;
 		}

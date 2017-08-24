@@ -29,8 +29,10 @@ namespace UDEngine.Components.Collision {
 		// Enabled means should have collision detection (can still on screen), Recyclable means should REMOVE from screen
 		public bool isRecyclable = false;
 
-		public UnityEvent collisionEvent = null;
-		public UnityEvent defaultEvent = null;
+		public UnityEvent collisionEvent = null; // Event on colliding with player
+		public UnityEvent defaultEvent = null; // Event that would be triggered every frame if the collider is monitored
+
+		public UnityEvent boundaryEvent = null; // Event that would be triggered when meeting with the monitor boundary
 		// PROP end
 
 		// METHOD begin
