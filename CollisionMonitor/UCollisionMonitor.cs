@@ -5,6 +5,7 @@ using UnityEngine;
 using UDEngine.Interface;
 using UDEngine.Internal;
 using UDEngine.Components;
+using UDEngine.Components.Actor;
 using UDEngine.Components.Collision;
 
 using KSM;
@@ -49,7 +50,7 @@ namespace UDEngine.Components.Collision {
 
 				// boundary check registers
 				if (!IsInBoundary (ubcPosition)) {
-					// TODO: 
+					ubc.GetActor ().InvokeBoundaryCallbacks (); // Invoke boundary callbacks
 				}
 
 				if (ubc.IsRecyclable ()) {
@@ -60,7 +61,7 @@ namespace UDEngine.Components.Collision {
 					_bulletColliders.Remove (ubcNode); // Remove Node from tracking
 				}
 
-				ubc.InvokeDefaultCallbacks (); // Don't invoke before checking recycling
+				ubc.GetActor().InvokeDefaultCallbacks (); // Don't invoke before checking recycling
 
 				bool hasFastDetect = false;
 				for (int i = 0; i < enabledTargetsLen; i++) {
@@ -77,7 +78,7 @@ namespace UDEngine.Components.Collision {
 							break;
 						}
 
-						ubc.InvokeCollisionCallbacks ();
+						ubc.GetActor().InvokeCollisionCallbacks ();
 					}
 				}
 				if (hasFastDetect) {

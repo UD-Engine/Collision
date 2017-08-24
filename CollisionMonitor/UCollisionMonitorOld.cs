@@ -86,7 +86,7 @@ namespace UDEngine.Components.Collision {
 					*/
 
 					foreach (UBulletCollider ubc in _bulletColliders) {
-						ubc.InvokeDefaultCallbacks ();
+						ubc.GetActor().InvokeDefaultCallbacks ();
 
 						if (ubc.IsCollidedWith (target)) {
 							isCollided = true;
@@ -96,7 +96,7 @@ namespace UDEngine.Components.Collision {
 								break;
 							}
 
-							ubc.InvokeCollisionCallbacks ();
+							ubc.GetActor().InvokeCollisionCallbacks ();
 						}
 					}
 

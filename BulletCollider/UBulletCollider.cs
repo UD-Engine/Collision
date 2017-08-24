@@ -10,6 +10,7 @@ using UDEngine;
 using UDEngine.Internal;
 using UDEngine.Components;
 using UDEngine.Components.Action;
+using UDEngine.Components.Actor;
 
 namespace UDEngine.Components.Collision {
 	/// <summary>
@@ -23,16 +24,21 @@ namespace UDEngine.Components.Collision {
 		}
 		// CONSTRUCTOR end
 
+		// UNITYFUNC begin
+		void Start() {
+			if (this.actor == null) {
+				this.actor = new UBulletActor (this);
+			}
+		}
+		// UNITYFUNC end
+
 		// PROP begin
 		//private Sequence _collisionActionSequence = null;
 
 		// Enabled means should have collision detection (can still on screen), Recyclable means should REMOVE from screen
 		public bool isRecyclable = false;
 
-		public UnityEvent collisionEvent = null; // Event on colliding with player
-		public UnityEvent defaultEvent = null; // Event that would be triggered every frame if the collider is monitored
-
-		public UnityEvent boundaryEvent = null; // Event that would be triggered when meeting with the monitor boundary
+		public UBulletActor actor = null;
 		// PROP end
 
 		// METHOD begin
@@ -55,42 +61,11 @@ namespace UDEngine.Components.Collision {
 			}
 		}
 
-		public void AddCollisionCallback(UnityAction callback) {
-			if (collisionEvent == null) {
-				collisionEvent = new UnityEvent ();
+		public UBulletActor GetActor() {
+			if (this.actor == null) {
+				this.actor = new UBulletActor (this);
 			}
-			collisionEvent.AddListener (callback);
-		}
-
-		public void InvokeCollisionCallbacks() {
-			if (collisionEvent == null) {
-				// DO NOTHING, and don't warn anything, as this might be useful
-			} else {
-				collisionEvent.Invoke ();
-			}
-		}
-
-		public void ClearCollisionCallbacks() {
-			collisionEvent = null;
-		}
-
-		public void AddDefaultCallback(UnityAction callback) {
-			if (defaultEvent == null) {
-				defaultEvent = new UnityEvent ();
-			}
-			defaultEvent.AddListener (callback);
-		}
-
-		public void InvokeDefaultCallbacks() {
-			if (defaultEvent == null) {
-				// DO NOTHING, and don't warn anything, as this might be useful
-			} else {
-				defaultEvent.Invoke ();
-			}
-		}
-
-		public void ClearDefaultCallbacks() {
-			defaultEvent = null;
+			return this.actor;
 		}
 		// METHOD end
 	}
