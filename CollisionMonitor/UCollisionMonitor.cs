@@ -12,24 +12,30 @@ using KSM;
 
 namespace UDEngine.Components.Collision {
 	// This class handle all the collisions between the target and the bullets
-	public class UCollisionMonitor : IMonolike {
+	public class UCollisionMonitor : MonoBehaviour {
 		// CONSTRUCTOR begin
+		// Removed as UCollisionMonitor changed from IMonolike to MonoBehaviour descendant
+		/*
 		public UCollisionMonitor(int cols, int rows, float sceneWidth, float sceneHeight, float minX, float minY) {
 			_bulletColliders = new LinkedList<UBulletCollider> ();
 			_targetColliders = new List<UTargetCollider> ();
 
-			_boundXMin = minX;
-			_boundXMax = minX + sceneWidth;
-			_boundYMin = minY;
-			_boundYMax = minY + sceneHeight;
+			boundXMin = minX;
+			boundWidth = sceneWidth;
+			boundYMin = minY;
+			boundHeight = sceneHeight;
 		}
+		*/
 		// CONSTRUCTOR end
 
 		// MONOLIKE FUNC begin
-		public void StartFunc() {
+		void Start() {
+			_bulletColliders = new LinkedList<UBulletCollider> ();
+			_targetColliders = new List<UTargetCollider> ();
+			_bulletRegionTriggers = new List<IBulletRegionTrigger> ();
 		}
 
-		public void UpdateFunc () {
+		void Update () {
 			// Create a simple minimal structure to avoid meaningless repetitive target.IsEnabled() check
 			List<UTargetCollider> enabledTargets = new List<UTargetCollider>();
 			foreach (UTargetCollider target in _targetColliders) {
@@ -41,6 +47,7 @@ namespace UDEngine.Components.Collision {
 			bool[] targetIsCollidedMap = new bool[enabledTargetsLen]; // default(bool) in C# is false
 
 			LinkedListNode<UBulletCollider> ubcNode = _bulletColliders.First;
+
 			while (ubcNode != null) {
 				UBulletCollider ubc = ubcNode.Value;
 				LinkedListNode<UBulletCollider> nextNode = ubcNode.Next;
@@ -53,6 +60,16 @@ namespace UDEngine.Components.Collision {
 					ubc.GetActor ().InvokeBoundaryCallbacks (); // Invoke boundary callbacks
 				}
 
+				// region trigger check
+				int regionTriggerLen = _bulletRegionTriggers.Count;
+				for (int i = 0; i < regionTriggerLen; i++) {
+					IBulletRegionTrigger trigger = _bulletRegionTriggers [i];
+					// Invoke regional trigger collider callbacks on collision
+					if (trigger.IsTriggerable (ubc)) {
+						trigger.InvokeTriggerCallbacks (ubc);
+					}
+				}
+
 				if (ubc.IsRecyclable ()) {
 					ubc.SetRecyclable (true); // In case that the enabled is still true...
 
@@ -61,7 +78,9 @@ namespace UDEngine.Components.Collision {
 					_bulletColliders.Remove (ubcNode); // Remove Node from tracking
 				}
 
+				// DEFAULT CALLBACK INVOCATION
 				ubc.GetActor().InvokeDefaultCallbacks (); // Don't invoke before checking recycling
+
 
 				bool hasFastDetect = false;
 				for (int i = 0; i < enabledTargetsLen; i++) {
@@ -100,37 +119,41 @@ namespace UDEngine.Components.Collision {
 		// PROP begin
 
 		// Monitor Boundary
-		private float _boundXMin;
-		private float _boundXMax;
-		private float _boundYMin;
-		private float _boundYMax;
+		public float boundXMin;
+		public float boundWidth;
+		public float boundYMin;
+		public float boundHeight;
 
 		// To make removal faster, changed to LinkedList
-		private LinkedList<UBulletCollider> _bulletColliders;
+		private LinkedList<UBulletCollider> _bulletColliders; // This is still private, as it will be TERRIBLE to display this
+
+		// This is made public now, for easier configuration
 		private List<UTargetCollider> _targetColliders;
+
+		private List<IBulletRegionTrigger> _bulletRegionTriggers;
 
 		// PROP end
 
 		// METHOD begin
 		public bool IsInBoundary(Vector3 pos) {
 			return (
-				(pos.x >= _boundXMin) &&
-				(pos.x <= _boundXMax) &&
-				(pos.y >= _boundYMin) &&
-				(pos.y <= _boundYMax)
+				(pos.x >= boundXMin) &&
+				(pos.x <= boundXMin + boundWidth) &&
+				(pos.y >= boundYMin) &&
+				(pos.y <= boundYMin + boundHeight)
 			);
 		}
 
 		public bool IsInBoundary(Vector2 pos) {
 			return (
-				(pos.x >= _boundXMin) &&
-				(pos.x <= _boundXMax) &&
-				(pos.y >= _boundYMin) &&
-				(pos.y <= _boundYMax)
+				(pos.x >= boundXMin) &&
+				(pos.x <= boundXMin + boundWidth) &&
+				(pos.y >= boundYMin) &&
+				(pos.y <= boundYMin + boundHeight)
 			);
 		}
 
-
+		// Safety check not yet added (e.g. initialize on use) as no problem currently met yet
 		public LinkedList<UBulletCollider> GetBulletColliders() {
 			return _bulletColliders;
 		}
@@ -139,8 +162,11 @@ namespace UDEngine.Components.Collision {
 			return _targetColliders;
 		}
 
+		public List<IBulletRegionTrigger> GetBulletRegionTriggers() {
+			return _bulletRegionTriggers;
+		}
+
 		public void AddBulletColliders(List<UBulletCollider> colliders) {
-			//_bulletColliders.AddRange (colliders);
 			for (int i = 0; i < colliders.Count; i++) {
 				_bulletColliders.AddLast (colliders [i]);
 			}
@@ -159,6 +185,14 @@ namespace UDEngine.Components.Collision {
 			_targetColliders.Add (collider);
 		}
 
+		public void AddBulletRegionTrigger(IBulletRegionTrigger trigger) {
+			_bulletRegionTriggers.Add (trigger);
+		}
+
+		public void AddBulletRegionTriggers(List<IBulletRegionTrigger> triggers) {
+			_bulletRegionTriggers.AddRange (triggers);
+		}
+
 		public void ClearBulletColliders() {
 			_bulletColliders.Clear ();
 		}
@@ -167,22 +201,21 @@ namespace UDEngine.Components.Collision {
 			_targetColliders.Clear ();
 		}
 
-		public void RefillBulletColliders(List<UBulletCollider> colliders) {
-			ClearBulletColliders ();
-			AddBulletColliders (colliders);
+		public void ClearBulletRegionTriggers() {
+			_bulletRegionTriggers.Clear ();
 		}
 
-		public void RefillTargetColliders(List<UTargetCollider> colliders) {
-			ClearTargetColliders ();
-			AddTargetColliders (colliders);
-		}
-
+		// These remove methods are EXTREMELY slow (especially the RemoveBulletCollider()); AVOID them
 		public void RemoveBulletCollider(UBulletCollider collider) {
 			_bulletColliders.Remove (collider);
 		}
 
 		public void RemoveTargetCollider(UTargetCollider collider) {
 			_targetColliders.Remove (collider);
+		}
+
+		public void RemoveBulletRegionTrigger(IBulletRegionTrigger trigger) {
+			_bulletRegionTriggers.Remove (trigger);
 		}
 		// METHOD end
 	}
