@@ -144,6 +144,7 @@ namespace UDEngine.Components.Collision {
 			this.layer = layer;
 		}
 
+		// These shorthands are SLOW! Consider using the global KDistance
 		public float DistanceFrom(Transform otherTrans) {
 			return Vector2.Distance (_Vec3ToVec2(this.trans.position), _Vec3ToVec2(otherTrans.position));
 		}

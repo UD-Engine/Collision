@@ -7,15 +7,15 @@ using UDEngine.Internal;
 using UDEngine.Components;
 using UDEngine.Components.Collision;
 
-using KSM;
-
 namespace UDEngine.Components.Collision {
 	// This class handle all the collisions between the target and the bullets
-	public class UCollisionMonitor : IMonolike {
+	public class UCollisionMonitorOld : IMonolike {
 		// CONSTRUCTOR begin
-		public UCollisionMonitor(int cols, int rows, float sceneWidth, float sceneHeight, float minX, float minY) {
+		public UCollisionMonitorOld(int cols, int rows, float sceneWidth, float sceneHeight, float minX, float minY) {
 			_bulletColliders = new LinkedList<UBulletCollider> ();
 			_targetColliders = new List<UTargetCollider> ();
+
+			_bulletHash = new USpatialHash2DV3<UCircleCollider> (cols, rows, sceneWidth, sceneHeight, minX, minY);
 		}
 		// CONSTRUCTOR end
 
@@ -24,23 +24,16 @@ namespace UDEngine.Components.Collision {
 		}
 
 		public void UpdateFunc () {
-			// Create a simple minimal structure to avoid meaningless repetitive target.IsEnabled() check
-			List<UTargetCollider> enabledTargets = new List<UTargetCollider>();
-			foreach (UTargetCollider target in _targetColliders) {
-				if (target.IsEnabled()) {
-					enabledTargets.Add (target);
-				}
-			}
-			int enabledTargetsLen = enabledTargets.Count; // Save for better performance
-			bool[] targetIsCollidedMap = new bool[enabledTargetsLen]; // default(bool) in C# is false
+			_bulletHash.ClearBuckets ();
 
+			/*
+			// Looping through LinkedList
 			LinkedListNode<UBulletCollider> ubcNode = _bulletColliders.First;
 			while (ubcNode != null) {
 				UBulletCollider ubc = ubcNode.Value;
 				LinkedListNode<UBulletCollider> nextNode = ubcNode.Next;
 
-				// Caching position will be VERY useful in later steps, including boundary collider check and target collision check
-				Vector3 ubcPosition = ubc.trans.position;
+				ubc.InvokeDefaultCallbacks ();
 
 				// TODO: boundary check registers
 
@@ -50,41 +43,69 @@ namespace UDEngine.Components.Collision {
 					// TODO: call clearup func here
 
 					_bulletColliders.Remove (ubcNode); // Remove Node from tracking
-				}
-
-				ubc.InvokeDefaultCallbacks (); // Don't invoke before checking recycling
-
-				bool hasFastDetect = false;
-				for (int i = 0; i < enabledTargetsLen; i++) {
-					UTargetCollider target = enabledTargets[i];
-
-					if (KVector3.DistanceXY(target.trans.position, ubcPosition) < ubc.GetRadius() + target.GetRadius()) {
-					//if (ubc.IsCollidedWith (target)) {
-						// If fast detect flag is set, then immediately drop out 
-						// and NOT invoking any bullet collision handling events
-						targetIsCollidedMap[i] = true;
-
-						if (target.IsFastDetect ()) {
-							hasFastDetect = true;
-							break;
-						}
-
-						ubc.InvokeCollisionCallbacks ();
+				} else {
+					if (ubc.IsEnabled ()) {
+						_bulletHash.Insert (ubc); // Insert to hash ONLY if is enabled
 					}
-				}
-				if (hasFastDetect) {
-					break;
 				}
 
 				ubcNode = nextNode; // Move to the next node
 			}
+			*/
 
-			for (int i = 0; i < enabledTargetsLen; i++) {
-				if (targetIsCollidedMap [i]) {
-					enabledTargets [i].InvokeCollisionCallbacks ();
+
+//			foreach (UBulletCollider ubc in _bulletColliders) {
+//				ubc.InvokeDefaultCallbacks ();
+//				if (ubc.IsEnabled ()) {
+//					_bulletHash.Insert (ubc);
+//				}
+//			}
+
+			foreach (UTargetCollider target in _targetColliders) {
+				if (!target.IsEnabled ()) {
+					continue;
+				} else {
+					List<UCircleCollider> nearbyBullets = _bulletHash.GetNearby (target);
+
+					bool isCollided = false;
+
+					/*
+					foreach (UCircleCollider uc in nearbyBullets) {
+						if (uc.IsCollidedWith (target)) {
+							isCollided = true;
+							// If fast detect flag is set, then immediately drop out 
+							// and NOT invoking any bullet collision handling events
+							if (target.IsFastDetect ()) {
+								break;
+							}
+
+							UBulletCollider ubc = uc as UBulletCollider;
+							ubc.InvokeCollisionCallbacks ();
+						}
+					}
+					*/
+
+					foreach (UBulletCollider ubc in _bulletColliders) {
+						ubc.InvokeDefaultCallbacks ();
+
+						if (ubc.IsCollidedWith (target)) {
+							isCollided = true;
+							// If fast detect flag is set, then immediately drop out 
+							// and NOT invoking any bullet collision handling events
+							if (target.IsFastDetect ()) {
+								break;
+							}
+
+							ubc.InvokeCollisionCallbacks ();
+						}
+					}
+
+
+					if (isCollided) {
+						target.InvokeCollisionCallbacks ();
+					}
 				}
 			}
-
 		}
 		// UNITYFUNC end
 
@@ -94,6 +115,7 @@ namespace UDEngine.Components.Collision {
 		private LinkedList<UBulletCollider> _bulletColliders;
 		private List<UTargetCollider> _targetColliders;
 
+		private USpatialHash2DV3<UCircleCollider> _bulletHash;
 		// PROP end
 
 		// METHOD begin
