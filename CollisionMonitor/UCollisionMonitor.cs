@@ -28,21 +28,42 @@ namespace UDEngine.Components.Collision {
 		*/
 		// CONSTRUCTOR end
 
-		// MONOLIKE FUNC begin
+		#region UNITYFUNC
 		void Start() {
 			_bulletColliders = new LinkedList<UBulletCollider> ();
 			_targetColliders = new List<UTargetCollider> ();
 			_bulletRegionTriggers = new List<IBulletRegionTrigger> ();
+			_targetColliderPositions = new List<Vector3> ();
 		}
 
 		void Update () {
 			// Create a simple minimal structure to avoid meaningless repetitive target.IsEnabled() check
-			List<UTargetCollider> enabledTargets = new List<UTargetCollider>();
+			List<UTargetCollider> enabledTargets = new List<UTargetCollider> ();
+			List<Vector3> enabledTargetPositions = new List<Vector3> (); // caching enabled targets' positions to avoid calling transform.position twice
+
+			int targetCollidersLen = _targetColliders.Count;
+			for (int i = 0; i < targetCollidersLen; i++) {
+				UTargetCollider target = _targetColliders [i];
+				// Caching target position
+				Vector3 targetPos = target.trans.position;
+				_targetColliderPositions [i] = targetPos;
+				if (target.IsEnabled()) {
+					// ALWAYS TOGETHER
+					enabledTargets.Add (target);
+					enabledTargetPositions.Add (targetPos);
+				}
+				// The reason to add in both _targetColliderPositions and enabledTargetPositions
+				// is to allow possibly ANY even inactive target be aimed for better future effects
+			}
+
+			/*
 			foreach (UTargetCollider target in _targetColliders) {
 				if (target.IsEnabled()) {
 					enabledTargets.Add (target);
 				}
 			}
+			*/
+
 			int enabledTargetsLen = enabledTargets.Count; // Save for better performance
 			bool[] targetIsCollidedMap = new bool[enabledTargetsLen]; // default(bool) in C# is false
 
@@ -87,7 +108,9 @@ namespace UDEngine.Components.Collision {
 					UTargetCollider target = enabledTargets[i];
 
 					// This exposition of the underlying collision logic is ugly, but... it is for performance's sake...
-					if (KVector3.DistanceXY(target.trans.position, ubcPosition) < ubc.GetRadius() + target.GetRadius()) {
+					// Also, here the enabledTargets have already their positions cached, so we can avoid calling transform.position again
+					if (KVector3.DistanceXY(enabledTargetPositions[i], ubcPosition) < ubc.GetRadius() + target.GetRadius()) {
+					//if (KVector3.DistanceXY(target.trans.position, ubcPosition) < ubc.GetRadius() + target.GetRadius()) {
 						// If fast detect flag is set, then immediately drop out 
 						// and NOT invoking any bullet collision handling events
 						targetIsCollidedMap[i] = true;
@@ -114,9 +137,9 @@ namespace UDEngine.Components.Collision {
 			}
 
 		}
-		// UNITYFUNC end
+		#endregion
 
-		// PROP begin
+		#region PROP
 
 		// Monitor Boundary
 		public float boundXMin;
@@ -127,14 +150,18 @@ namespace UDEngine.Components.Collision {
 		// To make removal faster, changed to LinkedList
 		private LinkedList<UBulletCollider> _bulletColliders; // This is still private, as it will be TERRIBLE to display this
 
-		// This is made public now, for easier configuration
+		// remove for targetColliders is RARE, thus we can use simple List (with .RemoveAt(index) of O(n))
 		private List<UTargetCollider> _targetColliders;
 
 		private List<IBulletRegionTrigger> _bulletRegionTriggers;
 
-		// PROP end
+		// This stores current target collider position. It updates every update
+		// It is used to cache position and provide for any target-aiming bullet attacks
+		private List<Vector3> _targetColliderPositions; 
 
-		// METHOD begin
+		#endregion
+
+		#region METHOD
 		public bool IsInBoundary(Vector3 pos) {
 			return (
 				(pos.x >= boundXMin) &&
@@ -166,31 +193,32 @@ namespace UDEngine.Components.Collision {
 			return _bulletRegionTriggers;
 		}
 
-		public void AddBulletColliders(List<UBulletCollider> colliders) {
-			for (int i = 0; i < colliders.Count; i++) {
-				_bulletColliders.AddLast (colliders [i]);
+		// Get target positions (cached) so that later bullet aiming functions could be used
+		// Due to the caching nature, it can be much faster
+		public Vector3 GetTargetPosition(int index = 0) {
+			if (index > _targetColliderPositions.Count) {
+				UDebug.Warning ("no matching target found, using (0, 0, 0) as fallback");
+				return new Vector3 (0, 0, 0);
 			}
+			return _targetColliderPositions [index];
 		}
+
+
+		// UPDATE: remove *s version as they are not so useful, and could be done with for-loop instead
 
 		public void AddBulletCollider(UBulletCollider collider) {
 			//_bulletColliders.Add (collider);
 			_bulletColliders.AddLast (collider);
 		}
 
-		public void AddTargetColliders(List<UTargetCollider> colliders) {
-			_targetColliders.AddRange (colliders);
-		}
-
 		public void AddTargetCollider(UTargetCollider collider) {
+			// ALWAYS TOGETHER
 			_targetColliders.Add (collider);
+			_targetColliderPositions.Add (collider.trans.position); // updating cached positions
 		}
 
 		public void AddBulletRegionTrigger(IBulletRegionTrigger trigger) {
 			_bulletRegionTriggers.Add (trigger);
-		}
-
-		public void AddBulletRegionTriggers(List<IBulletRegionTrigger> triggers) {
-			_bulletRegionTriggers.AddRange (triggers);
 		}
 
 		public void ClearBulletColliders() {
@@ -198,7 +226,9 @@ namespace UDEngine.Components.Collision {
 		}
 
 		public void ClearTargetColliders() {
+			// ALWAYS TOGETHER
 			_targetColliders.Clear ();
+			_targetColliderPositions.Clear ();
 		}
 
 		public void ClearBulletRegionTriggers() {
@@ -211,12 +241,19 @@ namespace UDEngine.Components.Collision {
 		}
 
 		public void RemoveTargetCollider(UTargetCollider collider) {
-			_targetColliders.Remove (collider);
+			// This is SLOW (O(n) * 3). But removal of target colliders is RARE compared to bullet colliders
+			int index = _targetColliders.IndexOf(collider);
+			if (index > 0) { // found
+				// ALWAYS TOGETHER
+				_targetColliders.RemoveAt(index);
+				_targetColliderPositions.RemoveAt (index); // remove cached position slot
+			}
+			//_targetColliders.Remove (collider);
 		}
 
 		public void RemoveBulletRegionTrigger(IBulletRegionTrigger trigger) {
 			_bulletRegionTriggers.Remove (trigger);
 		}
-		// METHOD end
+		#endregion
 	}
 }

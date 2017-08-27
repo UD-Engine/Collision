@@ -11,6 +11,7 @@ using UDEngine.Internal;
 using UDEngine.Components;
 using UDEngine.Components.Action;
 using UDEngine.Components.Actor;
+using UDEngine.Components.Bullet;
 
 namespace UDEngine.Components.Collision {
 	/// <summary>
@@ -29,6 +30,10 @@ namespace UDEngine.Components.Collision {
 			if (this.actor == null) {
 				this.actor = new UBulletActor (this);
 			}
+
+			if (this.bulletObject == null) {
+				UDebug.Warning("No bullet object linked from this UBulletCollider");
+			}
 		}
 		// UNITYFUNC end
 
@@ -37,6 +42,7 @@ namespace UDEngine.Components.Collision {
 		// Enabled means should have collision detection (can still on screen), Recyclable means should REMOVE from screen
 		public bool isRecyclable = false;
 
+		public UBulletObject bulletObject = null;
 		public UBulletActor actor = null;
 		// PROP end
 
@@ -58,6 +64,10 @@ namespace UDEngine.Components.Collision {
 				this.actor = new UBulletActor (this);
 			}
 			return this.actor;
+		}
+
+		public UBulletObject GetObject() {
+			return this.bulletObject;
 		}
 		// METHOD end
 	}
