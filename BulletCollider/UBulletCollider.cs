@@ -25,28 +25,23 @@ namespace UDEngine.Components.Collision {
 		}
 		// CONSTRUCTOR end
 
-		// UNITYFUNC begin
+		#region UNITYFUNC
 		void Start() {
-			if (this.actor == null) {
-				this.actor = new UBulletActor (this);
-			}
-
 			if (this.bulletObject == null) {
 				UDebug.Warning("No bullet object linked from this UBulletCollider");
 			}
 		}
-		// UNITYFUNC end
+		#endregion
 
-		// PROP begin
-
+		#region PROP
 		// Enabled means should have collision detection (can still on screen), Recyclable means should REMOVE from screen
 		public bool isRecyclable = false;
 
 		public UBulletObject bulletObject = null;
-		public UBulletActor actor = null;
-		// PROP end
+		// actor has been evicted to the bulletObject, which also contains GetActor();
+		#endregion
 
-		// METHOD begin
+		#region METHOD
 		public bool IsRecyclable() {
 			return this.isRecyclable;
 		}
@@ -60,15 +55,12 @@ namespace UDEngine.Components.Collision {
 		}
 
 		public UBulletActor GetActor() {
-			if (this.actor == null) {
-				this.actor = new UBulletActor (this);
-			}
-			return this.actor;
+			return this.bulletObject.GetActor ();
 		}
 
 		public UBulletObject GetObject() {
 			return this.bulletObject;
 		}
-		// METHOD end
+		#endregion
 	}
 }
