@@ -28,7 +28,10 @@ namespace UDEngine.Components.Collision {
 		#region UNITYFUNC
 		void Start() {
 			if (this.bulletObject == null) {
-				UDebug.Warning("No bullet object linked from this UBulletCollider");
+				UDebug.Error("No bullet object linked from this UBulletCollider");
+			}
+			if (this.actor == null) {
+				UDebug.Error("No bullet actor linked from this UBulletCollider");
 			}
 		}
 		#endregion
@@ -38,7 +41,7 @@ namespace UDEngine.Components.Collision {
 		public bool isRecyclable = false;
 
 		public UBulletObject bulletObject = null;
-		// actor has been evicted to the bulletObject, which also contains GetActor();
+		public UBulletActor actor = null; // re-inserted as the modified version proves terrible performance
 		#endregion
 
 		#region METHOD
@@ -55,7 +58,7 @@ namespace UDEngine.Components.Collision {
 		}
 
 		public UBulletActor GetActor() {
-			return this.bulletObject.GetActor ();
+			return this.actor;
 		}
 
 		public UBulletObject GetObject() {
