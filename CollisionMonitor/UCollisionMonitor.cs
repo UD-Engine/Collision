@@ -29,14 +29,28 @@ namespace UDEngine.Components.Collision {
 		// CONSTRUCTOR end
 
 		#region UNITYFUNC
+		void Awake() {
+			if (_bulletColliders == null) {
+				_bulletColliders = new LinkedList<UBulletCollider> ();
+			}
+			if (_targetColliders == null) {
+				_targetColliders = new List<UTargetCollider> ();
+			}
+			if (_bulletRegionTriggers == null) {
+				_bulletRegionTriggers = new List<IBulletRegionTrigger> ();
+			}
+			if (_targetColliderPositions == null) {
+				_targetColliderPositions = new List<Vector3> ();
+			}
+		}
+
 		void Start() {
-			_bulletColliders = new LinkedList<UBulletCollider> ();
-			_targetColliders = new List<UTargetCollider> ();
-			_bulletRegionTriggers = new List<IBulletRegionTrigger> ();
-			_targetColliderPositions = new List<Vector3> ();
 		}
 
 		void Update () {
+			//Debug.Log (_bulletColliders.Count.ToString () + "..." + _targetColliders.Count.ToString ());
+
+
 			// Create a simple minimal structure to avoid meaningless repetitive target.IsEnabled() check
 			List<UTargetCollider> enabledTargets = new List<UTargetCollider> ();
 			List<Vector3> enabledTargetPositions = new List<Vector3> (); // caching enabled targets' positions to avoid calling transform.position twice
@@ -95,6 +109,10 @@ namespace UDEngine.Components.Collision {
 					ubc.SetRecyclable (true); // In case that the enabled is still true...
 
 					// TODO: call clearup func here
+					// TODO: I decide NOT to put Recycle() here. 
+					// CollisionMonitor should be mostly oblivious of any sort of tasks that is not focused on Collision itself
+					// Thus the ONLY task for Recycle() done that would be handled here is the Remove from LinkedList task
+					// Other clearups will be done by inserting Recycle() into AddBoundaryCallback();
 
 					_bulletColliders.Remove (ubcNode); // Remove Node from tracking
 				}
@@ -146,6 +164,8 @@ namespace UDEngine.Components.Collision {
 		public float boundWidth;
 		public float boundYMin;
 		public float boundHeight;
+
+
 
 		// To make removal faster, changed to LinkedList
 		private LinkedList<UBulletCollider> _bulletColliders; // This is still private, as it will be TERRIBLE to display this
@@ -208,16 +228,30 @@ namespace UDEngine.Components.Collision {
 
 		public void AddBulletCollider(UBulletCollider collider) {
 			//_bulletColliders.Add (collider);
+			if (_bulletColliders == null) {
+				_bulletColliders = new LinkedList<UBulletCollider> ();
+			}
 			_bulletColliders.AddLast (collider);
 		}
 
 		public void AddTargetCollider(UTargetCollider collider) {
+			/*
+			if (_targetColliders == null) {
+				_targetColliders = new List<UTargetCollider> ();
+			}
+			if (_targetColliderPositions == null) {
+				_targetColliderPositions = new List<Vector3> ();
+			}
+			*/
 			// ALWAYS TOGETHER
 			_targetColliders.Add (collider);
 			_targetColliderPositions.Add (collider.trans.position); // updating cached positions
 		}
 
 		public void AddBulletRegionTrigger(IBulletRegionTrigger trigger) {
+			if (_bulletRegionTriggers == null) {
+				_bulletRegionTriggers = new List<IBulletRegionTrigger> ();
+			}
 			_bulletRegionTriggers.Add (trigger);
 		}
 
