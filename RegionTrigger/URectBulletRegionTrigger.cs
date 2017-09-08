@@ -45,11 +45,13 @@ namespace UDEngine.Components.Collision {
 		// PROP end
 
 		// METHOD begin
-		public void AddTriggerCallback(UnityAction<UBulletCollider> callback) {
+		public IBulletRegionTrigger AddTriggerCallback(UnityAction<UBulletCollider> callback) {
 			if (triggerEvents == null) { // Lazy init
 				triggerEvents = new UBulletRegionTriggerEvent();
 			}
 			triggerEvents.AddListener (callback);
+
+			return this;
 		}
 
 		public bool IsTriggerable(UBulletCollider ubc) {
@@ -74,12 +76,14 @@ namespace UDEngine.Components.Collision {
 			);
 		}
 
-		public void InvokeTriggerCallbacks(UBulletCollider ubc) {
+		public IBulletRegionTrigger InvokeTriggerCallbacks(UBulletCollider ubc) {
 			if (triggerEvents == null) {
 				// Do nothing
 			} else {
 				triggerEvents.Invoke (ubc);
 			}
+
+			return this;
 		}
 		// METHOD end
 	}

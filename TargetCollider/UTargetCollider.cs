@@ -33,28 +33,36 @@ namespace UDEngine.Components.Collision {
 		public bool IsFastDetect() {
 			return _shouldFastDetect;
 		}
-		public void SetFastDetect(bool condition = true) {
+		public UTargetCollider SetFastDetect(bool condition = true) {
 			_shouldFastDetect = condition;
+
+			return this;
 		}
 
 
-		public void AddCollisionCallback(UnityAction callback) {
+		public UTargetCollider AddCollisionCallback(UnityAction callback) {
 			if (collisionEvent == null) {
 				collisionEvent = new UnityEvent ();
 			}
 			collisionEvent.AddListener (callback);
+
+			return this;
 		}
 
-		public void InvokeCollisionCallbacks() {
+		public UTargetCollider InvokeCollisionCallbacks() {
 			if (collisionEvent == null) {
 				// DO NOTHING, and don't warn anything, as this might be useful
 			} else {
 				collisionEvent.Invoke ();
 			}
+
+			return this;
 		}
 
-		public void ClearCollisionCallbacks() {
+		public UTargetCollider ClearCollisionCallbacks() {
 			collisionEvent = null;
+
+			return this;
 		}
 		// METHOD end
 	}

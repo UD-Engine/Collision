@@ -9,10 +9,10 @@ using UDEngine.Components.Collision;
 
 namespace UDEngine.Interface {
 	public interface IBulletRegionTrigger {
-		void AddTriggerCallback (UnityAction<UBulletCollider> callback);
+		IBulletRegionTrigger AddTriggerCallback (UnityAction<UBulletCollider> callback);
 		bool IsTriggerable (UBulletCollider ubc);
 		bool IsTriggerable(Vector3 pos);
 		bool IsTriggerable(Vector2 pos);
-		void InvokeTriggerCallbacks(UBulletCollider ubc);
+		IBulletRegionTrigger InvokeTriggerCallbacks(UBulletCollider ubc);
 	}
 }
