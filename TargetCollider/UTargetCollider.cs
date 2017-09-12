@@ -9,7 +9,6 @@ using DG.Tweening;
 using UDEngine;
 using UDEngine.Internal;
 using UDEngine.Components;
-using UDEngine.Components.Action;
 
 namespace UDEngine.Components.Collision {
 	/// <summary>

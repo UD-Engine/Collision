@@ -89,10 +89,11 @@ namespace UDEngine.Components.Collision {
 
 				// Caching position will be VERY useful in later steps, including boundary collider check and target collision check
 				Vector3 ubcPosition = ubc.trans.position;
+				UBulletActor ubcActor = ubc.actor;
 
 				// boundary check registers
 				if (!IsInBoundary (ubcPosition)) {
-					ubc.GetActor ().InvokeBoundaryCallbacks (); // Invoke boundary callbacks
+					ubcActor.InvokeBoundaryCallbacks (); // Invoke boundary callbacks
 				}
 
 				// region trigger check
@@ -122,7 +123,7 @@ namespace UDEngine.Components.Collision {
 				}
 
 				// DEFAULT CALLBACK INVOCATION
-				ubc.GetActor().InvokeDefaultCallbacks (); // Don't invoke before checking recycling
+				ubcActor.InvokeDefaultCallbacks (); // Don't invoke before checking recycling
 
 
 				bool hasFastDetect = false;
@@ -142,7 +143,7 @@ namespace UDEngine.Components.Collision {
 							break;
 						}
 
-						ubc.GetActor().InvokeCollisionCallbacks ();
+						ubcActor.InvokeCollisionCallbacks ();
 					}
 				}
 				if (hasFastDetect) {
