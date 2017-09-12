@@ -159,6 +159,16 @@ namespace UDEngine.Components.Collision {
 			}
 
 		}
+
+
+		void OnDisable() { // On disable, clear all records
+			// Originally, I want to add some DisableCallbacks.
+			// However, this actually add some unneeded pressure of callbacks on monitor
+			// This would be further 
+			ClearBulletColliders ();
+			ClearTargetColliders ();
+			ClearBulletRegionTriggers ();
+		}
 		#endregion
 
 		#region PROP
