@@ -156,6 +156,9 @@ namespace UDEngine.Core.Collision {
 			for (int i = 0; i < enabledTargetsLen; i++) {
 				if (targetIsCollidedMap [i]) {
 					enabledTargets [i].InvokeCollisionCallbacks ();
+				} else {
+					// ADD: what target may need to do if NOT collided ever
+					enabledTargets [i].InvokeNoHitCallbacks ();
 				}
 			}
 
