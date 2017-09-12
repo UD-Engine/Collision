@@ -5,14 +5,14 @@ using UnityEngine;
 using UnityEngine.Events;
 
 using UDEngine;
-using UDEngine.Components;
-using UDEngine.Components.Collision;
-using UDEngine.Components.Actor;
+using UDEngine.Core;
+using UDEngine.Core.Collision;
+using UDEngine.Core.Actor;
 using UDEngine.Internal;
 using UDEngine.Interface;
 using UDEngine.Enum;
 
-namespace UDEngine.Components.Collision {
+namespace UDEngine.Core.Collision {
 	/// <summary>
 	/// Rect Region Trigger for Bullets. It is used to create something like
 	/// invisible bounce walls, or, combined with original boundary settings of UCollisionMonitor

@@ -8,11 +8,11 @@ using DG.Tweening;
 
 using UDEngine;
 using UDEngine.Internal;
-using UDEngine.Components;
-using UDEngine.Components.Actor;
-using UDEngine.Components.Bullet;
+using UDEngine.Core;
+using UDEngine.Core.Actor;
+using UDEngine.Core.Bullet;
 
-namespace UDEngine.Components.Collision {
+namespace UDEngine.Core.Collision {
 	/// <summary>
 	/// Bullet collider in collision system
 	/// </summary>

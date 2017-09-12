@@ -8,9 +8,9 @@ using DG.Tweening;
 
 using UDEngine;
 using UDEngine.Internal;
-using UDEngine.Components;
+using UDEngine.Core;
 
-namespace UDEngine.Components.Collision {
+namespace UDEngine.Core.Collision {
 	/// <summary>
 	/// Target Collider in a collision system (usually Player)
 	/// </summary>

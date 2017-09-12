@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEngine.Events;
 
 using UDEngine;
-using UDEngine.Components;
-using UDEngine.Components.Collision;
+using UDEngine.Core;
+using UDEngine.Core.Collision;
 
 namespace UDEngine.Interface {
 	public interface IBulletRegionTrigger {

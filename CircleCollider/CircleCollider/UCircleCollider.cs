@@ -8,7 +8,7 @@ using UDEngine.Enum;
 //Error Logging
 using UDEngine.Internal;
 
-namespace UDEngine.Components.Collision {
+namespace UDEngine.Core.Collision {
 
 	//Notice all editors require inheritance from UnityEngine.Object
 	//MonoBehavior provides: transform.position

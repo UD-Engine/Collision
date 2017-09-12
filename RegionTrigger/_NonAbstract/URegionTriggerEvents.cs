@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace UDEngine.Components.Collision {
+namespace UDEngine.Core.Collision {
 	public class UBulletRegionTriggerEvent : UnityEvent<UBulletCollider> {
 		// Unabstract the class
 	}

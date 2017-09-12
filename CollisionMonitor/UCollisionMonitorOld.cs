@@ -4,10 +4,10 @@ using UnityEngine;
 
 using UDEngine.Interface;
 using UDEngine.Internal;
-using UDEngine.Components;
-using UDEngine.Components.Collision;
+using UDEngine.Core;
+using UDEngine.Core.Collision;
 
-namespace UDEngine.Components.Collision {
+namespace UDEngine.Core.Collision {
 	// This class handle all the collisions between the target and the bullets
 	public class UCollisionMonitorOld : IMonolike {
 		// CONSTRUCTOR begin
