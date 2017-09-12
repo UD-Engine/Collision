@@ -100,7 +100,7 @@ namespace UDEngine.Components.Collision {
 				for (int i = 0; i < regionTriggerLen; i++) {
 					IBulletRegionTrigger trigger = _bulletRegionTriggers [i];
 					// Invoke regional trigger collider callbacks on collision
-					if (trigger.IsTriggerable (ubc)) {
+					if (trigger.IsTriggerable (ubcPosition)) { // Use cached ubcPosition instead of ubc to boost performance
 						trigger.InvokeTriggerCallbacks (ubc);
 					}
 				}
@@ -115,6 +115,10 @@ namespace UDEngine.Components.Collision {
 					// Other clearups will be done by inserting Recycle() into AddBoundaryCallback();
 
 					_bulletColliders.Remove (ubcNode); // Remove Node from tracking
+
+					// FIX: avoid calling the default callback of the should be recycled bullet
+					ubcNode = nextNode; // Move to the next node
+					continue;
 				}
 
 				// DEFAULT CALLBACK INVOCATION
