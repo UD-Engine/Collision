@@ -48,6 +48,10 @@ namespace UDEngine.Core.Collision {
 		}
 
 		void Update () {
+			// If should NOT update, immediately return
+			if (!shouldUpdate) {
+				return;
+			}
 			//Debug.Log (_bulletColliders.Count.ToString () + "..." + _targetColliders.Count.ToString ());
 
 
@@ -176,6 +180,8 @@ namespace UDEngine.Core.Collision {
 		#endregion
 
 		#region PROP
+		// Should update, global update lock
+		public bool shouldUpdate;
 
 		// Monitor Boundary
 		public float boundXMin;
@@ -305,6 +311,10 @@ namespace UDEngine.Core.Collision {
 
 		public void RemoveBulletRegionTrigger(IBulletRegionTrigger trigger) {
 			_bulletRegionTriggers.Remove (trigger);
+		}
+
+		public void SetUpdate(bool condition = true) {
+			shouldUpdate = condition;
 		}
 		#endregion
 	}
