@@ -136,7 +136,8 @@ namespace UDEngine.Core.Collision {
 
 					// This exposition of the underlying collision logic is ugly, but... it is for performance's sake...
 					// Also, here the enabledTargets have already their positions cached, so we can avoid calling transform.position again
-					if (KVector3.DistanceXY(enabledTargetPositions[i], ubcPosition) < ubc.GetRadius() + target.GetRadius()) {
+					if (KVector3.DistanceXY(enabledTargetPositions[i], ubcPosition) < ubc.GetRadius() + target.GetRadius()
+						&& ubc.layer == target.layer) { // Layer comparison, a forgotten feature implemented
 					//if (KVector3.DistanceXY(target.trans.position, ubcPosition) < ubc.GetRadius() + target.GetRadius()) {
 						// If fast detect flag is set, then immediately drop out 
 						// and NOT invoking any bullet collision handling events
